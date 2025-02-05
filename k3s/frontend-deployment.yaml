@@ -24,7 +24,7 @@ spec:
         image: registry.reinhardjs.my.id/perpus-frontend:latest
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 9000
+        - containerPort: 3000
         # env:
         # - name: NEXT_PUBLIC_API_URL
         #   value: "https://library-backend.reinhardjs.my.id/api"
@@ -40,8 +40,8 @@ spec:
     app: perpus-frontend
   ports:
     - protocol: TCP
-      port: 9000
-      targetPort: 9000
+      port: 3000
+      targetPort: 3000
   type: ClusterIP
 
 ---
@@ -64,7 +64,7 @@ spec:
           service:
             name: perpus-frontend
             port:
-              number: 9000
+              number: 3000
   tls:
   - hosts:
     - perpus.reinhardjs.my.id

@@ -52,7 +52,7 @@ metadata:
     traefik.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
-  - host: api.perpus.reinhardjs.my.id
+  - host: api-perpus.reinhardjs.my.id
     http:
       paths:
       - path: /
@@ -64,5 +64,5 @@ spec:
               number: 3000
   tls:
   - hosts:
-    - api.perpus.reinhardjs.my.id
+    - api-perpus.reinhardjs.my.id
     secretName: reinhardjs-my-id-tls-secret

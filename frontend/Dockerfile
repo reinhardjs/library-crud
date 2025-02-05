@@ -8,7 +8,7 @@ RUN npm install
 COPY .env .
 COPY . .
 
-EXPOSE 9000
+EXPOSE 3000
 
 RUN npm run build
 
