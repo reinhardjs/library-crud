@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: perpus-frontend
+  namespace: my
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: perpus-frontend
+  template:
+    metadata:
+      labels:
+        app: perpus-frontend
+    spec:
+      restartPolicy: Always
+      nodeSelector:
+        kubernetes.io/hostname: master-node
+      imagePullSecrets:
+      - name: my-regcred
+      containers:
+      - name: perpus-frontend
+        image: registry.reinhardjs.my.id/perpus-frontend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 9000
+        # env:
+        # - name: NEXT_PUBLIC_API_URL
+        #   value: "https://library-backend.reinhardjs.my.id/api"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: perpus-frontend
+  namespace: my
+spec:
+  selector:
+    app: perpus-frontend
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+  type: ClusterIP
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: perpus-frontend-ingress
+  namespace: my
+  annotations:
+    traefik.ingress.kubernetes.io/ssl-cert: "reinhardjs-my-id-tls-secret"
+    traefik.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  rules:
+  - host: perpus.reinhardjs.my.id
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: perpus-frontend
+            port:
+              number: 9000
+  tls:
+  - hosts:
+    - perpus.reinhardjs.my.id
+    secretName: reinhardjs-my-id-tls-secret
