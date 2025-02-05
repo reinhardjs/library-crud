@@ -40,17 +40,10 @@ export const createBook = async (request, reply) => {
 
 export const getAllBooks = async (request, reply) => {
   try {
-    const books = await prisma.book.findMany({
-      include: {
-        category: true,
-        status: true,
-        _count: {
-          select: { lendings: true }
-        }
-      }
-    });
+    const books = await prisma.book.findMany();
     return books;
   } catch (error) {
+    console.log(`Failed to retrieve books`, error);
     return reply.status(500).send({ error: 'Failed to retrieve books' });
   }
 };
@@ -60,14 +53,7 @@ export const getBookById = async (request, reply) => {
   
   try {
     const book = await prisma.book.findUnique({
-      where: { id: parseInt(id) },
-      include: {
-        category: true,
-        status: true,
-        _count: {
-          select: { lendings: true }
-        }
-      }
+      where: { id: parseInt(id) }
     });
 
     if (!book) {
