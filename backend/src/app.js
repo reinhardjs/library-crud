@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import bookRoutes from './routes/bookRoutes.js';
 
 export async function build() {
   const app = Fastify({
@@ -13,6 +14,9 @@ export async function build() {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE']
   });
+
+  // Register routes
+  await app.register(bookRoutes, { prefix: '/v1/books' });
 
   return app;
 } 

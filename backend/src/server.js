@@ -1,6 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { PrismaClient } from '@prisma/client';
+import bookRoutes from './routes/bookRoutes.js';
 
 const prisma = new PrismaClient();
 const fastify = Fastify({ logger: true });
@@ -11,6 +12,9 @@ fastify.register(cors, {
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE']
 });
+
+// Routes
+fastify.register(bookRoutes, { prefix: '/api/books' });
 
 // Global error handler
 fastify.setErrorHandler((error, request, reply) => {
