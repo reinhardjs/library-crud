@@ -12,6 +12,8 @@ model Book {
   title       String
   author      String
   quantity    Int
+  filePath    String?
+  fileName    String?
 
   @@map("books")
 }
