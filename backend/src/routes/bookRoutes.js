@@ -3,10 +3,18 @@ import {
   getAllBooks,
   updateBook,
   getBookById,
-  deleteBook
+  deleteBook,
+  uploadBookFile,
+  downloadBookFile
 } from '../controllers/bookController.js';
 
 export default async function bookRoutes(fastify, opts) {
+  // Register multipart support
+  await fastify.register(import('@fastify/multipart'), {
+    limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB limit
+    }
+  });
 
   const bookSchema = {
     body: {
@@ -52,5 +60,37 @@ export default async function bookRoutes(fastify, opts) {
   fastify.delete('/:id',
     {},
     deleteBook
+  );
+
+  // Upload file for a book
+  fastify.post('/:id/upload',
+    {
+      schema: {
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' }
+          },
+          required: ['id']
+        }
+      }
+    },
+    uploadBookFile
+  );
+
+  // Download file for a book
+  fastify.get('/:id/download',
+    {
+      schema: {
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' }
+          },
+          required: ['id']
+        }
+      }
+    },
+    downloadBookFile
   );
 }

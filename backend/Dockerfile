@@ -9,6 +9,7 @@ COPY .env .
 COPY . .
 
 RUN npm run prisma:generate
+RUN mkdir -p uploads
 
 EXPOSE 3000
 

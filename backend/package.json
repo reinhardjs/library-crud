@@ -16,6 +16,7 @@
   "description": "Digital Library Management System Backend",
   "dependencies": {
     "@fastify/cors": "^10.0.2",
+    "@fastify/multipart": "^9.0.3",
     "@fastify/swagger": "^9.4.2",
     "@fastify/swagger-ui": "^5.2.1",
     "@prisma/client": "^6.3.0",

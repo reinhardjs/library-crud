@@ -2,6 +2,7 @@ import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { booksApi } from '@/services/api';
 import BookForm from './BookForm';
+import FileUpload from './FileUpload';
 import { toast } from 'react-hot-toast';
 
 interface Book {
@@ -41,6 +42,23 @@ export default function BookList({ books, onUpdate }: BookListProps) {
         }
     };
 
+    const handleDownload = async (bookId: number) => {
+        try {
+            const response = await booksApi.downloadFile(bookId);
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `book-${bookId}.pdf`); // Adjust filename as needed
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download failed:', error);
+            toast.error('Failed to download file');
+        }
+    };
+
     return (
         <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
@@ -56,6 +74,9 @@ export default function BookList({ books, onUpdate }: BookListProps) {
                             Quantity
                         </th>
                         <th className="px-6 py-3 text-left text-xs uppercase tracking-wider">
+                            Files
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs uppercase tracking-wider">
                             Actions
                         </th>
                     </tr>
@@ -67,6 +88,17 @@ export default function BookList({ books, onUpdate }: BookListProps) {
                                 <td className="px-6 py-4 whitespace-nowrap">{book.title}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{book.author}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{book.quantity}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    <div className="flex items-center space-x-2">
+                                        <FileUpload bookId={book.id} onSuccess={onUpdate} />
+                                        <button
+                                            onClick={() => handleDownload(book.id)}
+                                            className="text-blue-600 hover:text-blue-800"
+                                        >
+                                            Download
+                                        </button>
+                                    </div>
+                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap space-x-2">
                                     <Dialog.Root open={editingBook?.id === book.id} onOpenChange={(open) => !open && setEditingBook(null)}>
                                         <Dialog.Trigger asChild>

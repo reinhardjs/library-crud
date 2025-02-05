@@ -26,7 +26,20 @@ export const booksApi = {
         quantity?: number;
         categoryId?: number;
     }) => api.put(`/books/${id}`, data),
-    delete: (id: number) => api.delete(`/books/${id}`)
+    delete: (id: number) => api.delete(`/books/${id}`),
+    uploadFile: (bookId: number, file: File) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        return api.post(`/books/${bookId}/upload`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    },
+    downloadFile: (bookId: number) => 
+        api.get(`/books/${bookId}/download`, {
+            responseType: 'blob'
+        }),
 };
 
 export default api;

@@ -1,7 +1,20 @@
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import { createWriteStream, createReadStream } from 'fs';
+import { pipeline } from 'stream/promises';
+import path from 'path';
+import fs from 'fs/promises';
 
 const prisma = new PrismaClient();
+
+const UPLOAD_DIR = './uploads';
+
+// Ensure upload directory exists
+try {
+  await fs.mkdir(UPLOAD_DIR, { recursive: true });
+} catch (err) {
+  console.error('Failed to create upload directory:', err);
+}
 
 // Validation schema
 const bookSchema = z.object({
@@ -112,6 +125,76 @@ export const deleteBook = async (request, reply) => {
     
     return reply.status(500).send({ 
       error: 'Book deletion failed',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+export const uploadBookFile = async (request, reply) => {
+  const { id } = request.params;
+  
+  try {
+    const data = await request.file();
+    if (!data) {
+      return reply.status(400).send({ error: 'No file uploaded' });
+    }
+
+    // Check if book exists
+    const book = await prisma.book.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!book) {
+      return reply.status(404).send({ error: 'Book not found' });
+    }
+
+    const fileExt = path.extname(data.filename);
+    const fileName = `book_${id}${fileExt}`;
+    const filePath = path.join(UPLOAD_DIR, fileName);
+
+    // Save file metadata in database
+    await prisma.book.update({
+      where: { id: parseInt(id) },
+      data: {
+        filePath: filePath,
+        fileName: fileName
+      }
+    });
+
+    // Save the file
+    await pipeline(data.file, createWriteStream(filePath));
+
+    return reply.send({ message: 'File uploaded successfully' });
+  } catch (error) {
+    request.log.error(error);
+    return reply.status(500).send({ 
+      error: 'File upload failed',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+export const downloadBookFile = async (request, reply) => {
+  const { id } = request.params;
+
+  try {
+    const book = await prisma.book.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!book || !book.filePath) {
+      return reply.status(404).send({ error: 'File not found' });
+    }
+
+    const fileStream = createReadStream(book.filePath);
+    reply.type('application/octet-stream');
+    reply.header('Content-Disposition', `attachment; filename="${book.fileName}"`);
+    
+    return reply.send(fileStream);
+  } catch (error) {
+    request.log.error(error);
+    return reply.status(500).send({ 
+      error: 'File download failed',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
