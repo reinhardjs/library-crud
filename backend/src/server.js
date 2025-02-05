@@ -14,7 +14,7 @@ fastify.register(cors, {
 });
 
 // Routes
-fastify.register(bookRoutes, { prefix: '/api/books' });
+fastify.register(bookRoutes, { prefix: '/v1/books' });
 
 // Global error handler
 fastify.setErrorHandler((error, request, reply) => {
